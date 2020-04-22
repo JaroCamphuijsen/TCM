@@ -58,7 +58,7 @@ class Cyclone(object):
     self.pressure.append(pressure)
 
 
-def read_data(filename, cyclones):
+def read_data(filename, cyclones, multiple_basins):
   inp_file = open(filename) 
   index_global = -1
   index_old = -1
@@ -104,7 +104,7 @@ def read_data(filename, cyclones):
           cyclones[index_global].landfall = int(float(fields[11])) 
 
       # Stop counting and print line number for next iteration  
-      if (index_global - n_unactive) == 200:
+      if (index_global - n_unactive) ==300:
         break
 
   Ncyclones = index_global
@@ -283,10 +283,9 @@ def tstepping(Ncyclones, cyclones):
     for j in range(0, Ncyclones):
       if cyclones[j].status == -1 or cyclones[j].status == 0:
         active_cyclones += 1
-    if active_cyclones == 200:
+    if active_cyclones == 0:
       print('timing_parallel', current_time)
-      print("average number of cyclones per timestep",numpy.mean(cyclones_in_use))  
-      sys.exit() # 
+      break 
 
     # Estimate average N of cyclones which we run simultaneously
     for j in range(0,Ncyclones):
@@ -345,7 +344,7 @@ def tstepping(Ncyclones, cyclones):
 
       
 if __name__=="__main__":
-  Ncyclones = read_data(filename, cyclones)
+  Ncyclones = read_data(filename, cyclones, multiple_basins)
   Ncyclones = 50 # for fast check
   set_distances(Ncyclones, cyclones) 
   place_events_initial(Ncyclones, effective_distance, cyclones)
