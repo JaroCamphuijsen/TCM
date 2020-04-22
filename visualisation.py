@@ -7,10 +7,13 @@ from omuse.ext.spherical_geometry import distance
 from omuse.units import units
 
 filename = sys.argv[1]  # input file with list of cyclones
+start_line = int(sys.argv[2]) # line to start reading cyclones
+multiple_basins = False
 effective_distance = 1500 | units.km 
+time_offset = 2*8 #  8 is one day
+
 Ncyclones = 0
 cyclones=dict()
-time_offset = 8 #  day
 
 class Cyclone(object):
   def __init__(self, yr, index):
@@ -59,62 +62,69 @@ def read_data(filename, cyclones):
   inp_file = open(filename) 
   index_global = -1
   index_old = -1
+  n_unactive = 0
+  line_number = 0
 
   for line in inp_file:
-    fields = line.strip().split(',')
-    yr = int(float(fields[0]))
-    index = int(float(fields[2]))
+    line_number += 1
+
+    if line_number >= start_line:
+      fields = line.strip().split(',')
+      yr = int(float(fields[0]))
+      index = int(float(fields[2]))
     
-    if index != index_old:
-      index_global += 1
-      cyclones[index_global]=Cyclone(yr,index)
-      cyclones[index_global].basin = int(float(fields[4]))
-      cyclones[index_global].month = int(float(fields[1]))
-    index_old = index
+      if index != index_old:
+        index_global += 1
+        cyclones[index_global]=Cyclone(yr,index)
+        cyclones[index_global].basin = int(float(fields[4]))
+        cyclones[index_global].month = int(float(fields[1]))
+      # For fast computation exclude cyclones without landfall, 
+      # set their status to finished
+        if index_global  > 0:
+          if cyclones[index_global-1].landfall == 0:
+            cyclones[index_global-1].status = 3
+            n_unactive += 1
+          if len(cyclones[index_global-1].times) == 0:
+            cyclones[index_global-1].status = 3
+            n_unactive += 1
+      index_old = index
 
-    if(float(fields[12]) < 1000.0 or len(cyclones[index_global].times) != 0):
-      cyclones[index_global].set_times(int(float(fields[3])))
-      cyclones[index_global].set_lats(float(fields[5]))
-      cyclones[index_global].set_lons(float(fields[6]))
-      cyclones[index_global].set_pressure(float(fields[7]))
-      cyclones[index_global].set_ws(float(fields[8]))
-      cyclones[index_global].set_radii(float(fields[9]))
-      cyclones[index_global].set_ld(float(fields[12]))
+      if(float(fields[12]) < 1000.0 or len(cyclones[index_global].times) != 0):
+        cyclones[index_global].set_times(int(float(fields[3])))
+        cyclones[index_global].set_lats(float(fields[5]))
+        cyclones[index_global].set_lons(float(fields[6]))
+        cyclones[index_global].set_pressure(float(fields[7]))
+        cyclones[index_global].set_ws(float(fields[8]))
+        cyclones[index_global].set_radii(float(fields[9]))
+        cyclones[index_global].set_ld(float(fields[12]))
 
-      if int(float(fields[10])) > cyclones[index_global].category:
-        cyclones[index_global].category = int(float(fields[10])) 
-      if int(float(fields[11])) > cyclones[index_global].landfall:
-        cyclones[index_global].landfall = int(float(fields[11])) 
+        if int(float(fields[10])) > cyclones[index_global].category:
+          cyclones[index_global].category = int(float(fields[10])) 
+        if int(float(fields[11])) > cyclones[index_global].landfall:
+          cyclones[index_global].landfall = int(float(fields[11])) 
+
+      # Stop counting and print line number for next iteration  
+      if (index_global - n_unactive) == 200:
+        break
 
   Ncyclones = index_global
-  n_unactive = 0
-
-  # For fast computation exclude cyclones without landfall, set their status to finished
-  for i in range(0, Ncyclones):
-    if cyclones[i].landfall == 0:
-      cyclones[i].status = 3
-      n_unactive += 1      
-    if len(cyclones[i].times) == 0:
-      cyclones[i].status = 3
-      n_unactive += 1
   print("N of cyclones in the input file", Ncyclones)
-  print("N of cyclones which fit criteria", Ncyclones - n_unactive) 
+  print("N of cyclones which fit criteria", Ncyclones - n_unactive)
+  print("Line number for next iteration", line_number)
 
-  for i in range(0, Ncyclones):
-    if cyclones[i].basin == 5:
-      print ("basin N 5", cyclones[i].status, cyclones[i].landfall)
-  tot_cyclones = numpy.zeros(6)
-  tot_tsteps = numpy.zeros(6)
 
-  # Counting N of cyclones per each set of active cyclones per basin
-  for i in range(0, Ncyclones):
-    if cyclones[i].status == -1:
-      for bas in range(0,6):
-        if cyclones[i].basin == bas:
-          tot_cyclones[bas] += 1
-          tot_tsteps[bas] +=  max(cyclones[i].times)
-  print ("Tot N of cyclones per basin",tot_cyclones,"Tot N of tsteps", tot_tsteps)  
+  if multiple_basins == True:
+    tot_cyclones = numpy.zeros(6)
+    tot_tsteps = numpy.zeros(6)
 
+    # Counting N of cyclones per each set of active cyclones per basin
+    for i in range(0, Ncyclones):
+      if cyclones[i].status == -1:
+        for bas in range(0,6):
+          if cyclones[i].basin == bas:
+            tot_cyclones[bas] += 1
+            tot_tsteps[bas] +=  max(cyclones[i].times)
+    print ("Tot N of cyclones per basin",tot_cyclones,"Tot N of tsteps", tot_tsteps)  
   return Ncyclones
 
 
@@ -252,6 +262,7 @@ def place_event(Ncyclones, effective_distance, cyclones, current_time):
       cyclones[i].status = 0
       cyclones[i].start_time = current_time + time_offset
 
+
 # Plotting and writing data
 def tstepping(Ncyclones, cyclones):
   week = 56
@@ -335,7 +346,7 @@ def tstepping(Ncyclones, cyclones):
       
 if __name__=="__main__":
   Ncyclones = read_data(filename, cyclones)
-  #Ncyclones = 100 # for fast check
+  Ncyclones = 50 # for fast check
   set_distances(Ncyclones, cyclones) 
   place_events_initial(Ncyclones, effective_distance, cyclones)
   tstepping(Ncyclones, cyclones)
