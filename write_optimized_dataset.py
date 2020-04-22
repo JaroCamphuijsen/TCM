@@ -1,9 +1,4 @@
 import sys
-import numpy
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
-from statistics import mean
-from omuse.ext.spherical_geometry import distance
 from omuse.units import units
 from visualisation import read_data,set_distances
 from visualisation import place_events_initial, place_event
