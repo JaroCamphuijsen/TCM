@@ -169,6 +169,8 @@ def set_distances(Ncyclones, cyclones):
                 dist = dist_temp 
                 shift = l
                 connection = 1
+              if shift > 0 and dist_temp <= effective_distance:
+                break
         else:
           connection = 0
           shift = -1
@@ -222,14 +224,20 @@ def place_event(Ncyclones, effective_distance, cyclones, current_time):
       for j in range(0, Ncyclones):
         if cyclones[j].status == 0:  
           active_cyclone = True
-          if (cyclones[j].connection[i] == 1):
+          if (cyclones[j].connection[i] == 1 and       \
+              cyclones[j].start_time < current_time):
+ 
             if (cyclones[i].shift[j] > (current_time - cyclones[j].start_time) \
                 and cyclones[j].start_time < current_time):
-              min_distance.append(cyclones[i].distance[j])
+                min_distance.append(cyclones[i].distance[j])
             elif cyclones[i].shift[j] == 0:
               min_distance.append(cyclones[i].distance[j])
             else:            
               min_distance.append(0 | units.km)
+
+          elif (cyclones[j].connection[i] == 1 and cyclones[i].shift[j] == 0 and \
+                cyclones[j].start_time >= current_time):
+            min_distance.append(cyclones[i].distance[j])
 
           else:            
              min_distance.append(0 | units.km)
