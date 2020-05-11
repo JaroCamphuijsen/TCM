@@ -11,7 +11,7 @@ start_line = int(sys.argv[2]) # line to start reading cyclones
 multiple_basins = False
 effective_distance = 1500 | units.km 
 time_offset = 2*8 #  8 is one day
-
+pre_selection = False
 Ncyclones = 0
 cyclones=dict()
 
@@ -89,7 +89,12 @@ def read_data(filename, cyclones, multiple_basins):
             n_unactive += 1
       index_old = index
 
-      if(float(fields[12]) < 1000.0 or len(cyclones[index_global].times) != 0):
+      if pre_selection == True:
+        shore_distance = 1000.0
+      else:
+        shore_distance = 1e6
+
+      if(float(fields[12]) < shore_distance or len(cyclones[index_global].times) != 0):
         cyclones[index_global].set_times(int(float(fields[3])))
         cyclones[index_global].set_lats(float(fields[5]))
         cyclones[index_global].set_lons(float(fields[6]))
@@ -100,8 +105,9 @@ def read_data(filename, cyclones, multiple_basins):
 
         if int(float(fields[10])) > cyclones[index_global].category:
           cyclones[index_global].category = int(float(fields[10])) 
-        if int(float(fields[11])) > cyclones[index_global].landfall:
-          cyclones[index_global].landfall = int(float(fields[11])) 
+        if pre_selection == True:
+          if int(float(fields[11])) > cyclones[index_global].landfall:
+            cyclones[index_global].landfall = int(float(fields[11])) 
 
       # Stop counting and print line number for next iteration  
       if (index_global - n_unactive) ==300:
