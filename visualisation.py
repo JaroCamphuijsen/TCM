@@ -80,13 +80,14 @@ def read_data(filename, cyclones, multiple_basins):
         cyclones[index_global].month = int(float(fields[1]))
       # For fast computation exclude cyclones without landfall, 
       # set their status to finished
-        if index_global  > 0:
-          if cyclones[index_global-1].landfall == 0:
-            cyclones[index_global-1].status = 3
-            n_unactive += 1
-          if len(cyclones[index_global-1].times) == 0:
-            cyclones[index_global-1].status = 3
-            n_unactive += 1
+        if pre_selection == True:
+          if index_global  > 0:
+            if cyclones[index_global-1].landfall == 0:
+              cyclones[index_global-1].status = 3
+              n_unactive += 1
+            if len(cyclones[index_global-1].times) == 0:
+              cyclones[index_global-1].status = 3
+              n_unactive += 1
       index_old = index
 
       if pre_selection == True:
