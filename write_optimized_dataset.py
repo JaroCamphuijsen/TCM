@@ -10,6 +10,7 @@ multiple_basins = False
 effective_distance = 1500 | units.km
 time_offset = 2*8 #  8 is one day
 Nfiles = 4
+pre_selection = True
 
 Ncyclones = 0
 cyclones=dict()
@@ -35,7 +36,7 @@ def write_new_database(Ncyclones, cyclones):
        for k in range(0, Nfiles):
          if counter[k] <= cyclones[i].start_time*3:
            counter[k] = cyclones[i].start_time*3 + max(cyclones[i].times)*3
-           print (k,counter[k])
+           print ('file number', k,'cyclone N',i,'starting time',counter[k])
            break
 
        for j in range(0, len(cyclones[i].times)):
@@ -44,8 +45,9 @@ def write_new_database(Ncyclones, cyclones):
                 str(i) + ', ' + str(cyclones[i].start_time + cyclones[i].times[j]) + ', ' +  \
                 str(cyclones[i].basin) + ', ' + str(cyclones[i].lats[j]) + ', ' + \
                 str(cyclones[i].lons[j]) + ', ' + str(cyclones[i].pressure[j]) + ', ' + \
-                str(cyclones[i].ws[j]) + ', ' + str(cyclones[i].category) + ', ' + \
-                str(cyclones[i].landfall) + ', ' + str(cyclones[i].ld[j])
+                str(cyclones[i].ws[j]) + ', ' + str(cyclones[i].radii + ', ' +      \
+                str(cyclones[i].category) + ', ' + str(cyclones[i].landfall) + ', ' +  \
+                str(cyclones[i].ld[j])
 
          single_out_file.write(strn + '\n')
          out_file[k].write(strn + '\n')
@@ -88,7 +90,7 @@ def tstepping(Ncyclones, cyclones):
 
 
 if __name__=="__main__":
-  Ncyclones = read_data(filename, cyclones,multiple_basins)
+  Ncyclones = read_data(filename, cyclones, multiple_basins, pre_selection)
   Ncyclones = 50 # for fast check
   set_distances(Ncyclones, cyclones)
   place_events_initial(Ncyclones, effective_distance, cyclones)

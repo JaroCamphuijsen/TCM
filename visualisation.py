@@ -11,7 +11,7 @@ start_line = int(sys.argv[2]) # line to start reading cyclones
 multiple_basins = False
 effective_distance = 1500 | units.km 
 time_offset = 2*8 #  8 is one day
-pre_selection = False
+pre_selection = True
 Ncyclones = 0
 cyclones=dict()
 
@@ -58,7 +58,7 @@ class Cyclone(object):
     self.pressure.append(pressure)
 
 
-def read_data(filename, cyclones, multiple_basins):
+def read_data(filename, cyclones, multiple_basins, pre_selection):
   inp_file = open(filename) 
   index_global = -1
   index_old = -1
@@ -263,7 +263,6 @@ def place_event(Ncyclones, effective_distance, cyclones, current_time):
       if not active_cyclone:
         cyclones[i].status = 0
         cyclones[i].start_time = current_time + time_offset
-        print('no active cyclones', current_time)
 
     if len(min_distance) > 0 and min(min_distance) > effective_distance:
       cyclones[i].status = 0
@@ -351,7 +350,7 @@ def tstepping(Ncyclones, cyclones):
 
       
 if __name__=="__main__":
-  Ncyclones = read_data(filename, cyclones, multiple_basins)
+  Ncyclones = read_data(filename, cyclones, multiple_basins, pre_selection)
   Ncyclones = 50 # for fast check
   set_distances(Ncyclones, cyclones) 
   place_events_initial(Ncyclones, effective_distance, cyclones)
