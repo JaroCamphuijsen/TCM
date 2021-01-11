@@ -19,8 +19,8 @@ class List_Forcings:
 
         for line in time_list:
             fields=line.strip().split(',')
-            start_time=float(fields[0])*3600 | units.s
-            end_time=float(fields[1])*3600 | units.s
+            start_time=3*float(fields[0])*3600 | units.s
+            end_time=3*float(fields[1])*3600 | units.s
             filename="data/cyclone_"+str(int(float(fields[0])))+".txt"
             self.internal_list[order]=TC_forcing(self.nodes,self.links,   \
                                       start_time,end_time,filename)
