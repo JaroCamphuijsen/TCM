@@ -2,12 +2,12 @@ from datetime import datetime
 
 from omuse.community.delft3d.interface import DFlowFM
 
-
 from omuse.units import units
 from matplotlib import pyplot
 
 import sys
 import numpy
+
 from forcing import List_Forcings
 
  
@@ -38,8 +38,6 @@ d.parameters.use_interface_patm=True
 ini_external_forcing=getattr(d, "ini_external forcing")
 ini_external_forcing.ExtForceFile="gtsm_coarse.ext"
 d.ini_time.RefDate=start_date
-input()
-# write_optimized dataset
 
 print("flow nodes",d.flow_nodes.shape)
 print("flow links",d.flow_links.shape)
