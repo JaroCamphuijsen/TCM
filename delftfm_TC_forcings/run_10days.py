@@ -32,7 +32,6 @@ d=DFlowFM( ini_file="gtsm_coarse.mdu", coordinates="spherical", redirection="non
 
 print(d.parameter_set_names())
 
-
 # set parameters for internal forcing
 d.parameters.use_interface_wind=True
 d.parameters.use_interface_patm=True
@@ -45,8 +44,6 @@ input()
 print("flow nodes",d.flow_nodes.shape)
 print("flow links",d.flow_links.shape)
 
-
-  
 tc_forcings=List_Forcings(d.flow_nodes,d.flow_links)
 tc_forcings.add_elements()
 
@@ -61,15 +58,14 @@ channel1=tc_forcings.links.new_channel_to(d.flow_links_forcing)
 channel2=tc_forcings.nodes.new_channel_to(d.flow_nodes_forcing)
 
 while d.model_time < tend-dt/2:
-    i+=1
     # evolve
     channel1.copy_attributes(["vx","vy"],target_names=["wind_vx","wind_vy"])
     channel2.copy_attributes(["pressure"],target_names=["atmospheric_pressure"])
 
-    #sys.exit()
-
     tc_forcings.evolve(d.model_time+dt)
     d.evolve_model(d.model_time+dt)
+
+    i+=1
     time_count += 3
 
     #Plotting on nodes
