@@ -4,17 +4,16 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from statistics import mean
 from geopy.distance import distance
-#Dont forget to swith back to variable time offset
 
 filename = "STORM_DATA_IBTRACS_NA_1000_YEARS_0.txt"  #  input file
 start_line = 0 # line to start reading cyclones
 multiple_basins = False
 effective_distance = 1500.0  
 time_offset = 16 #  8 is one day
-Nfiles = 5
-basin_name = "WP_"
+Nfiles = 5 # determines number of cyclones that will be allowed to be placed together
+basin_name = "NA_"
 pre_selection = False
-Ncyclones = 0
+Ncyclones = 20 # number of allowed cyclones (which fit criteria for pre-selection if it is used)
 order = 0
 cyclones=dict()
 
@@ -63,7 +62,7 @@ class Cyclone(object):
     self.pressure.append(pressure)
 
 
-def read_data(filename, cyclones, multiple_basins,pre_selection):
+def read_data(filename, cyclones, multiple_basins,pre_selection,Ncyclones):
   inp_file = open(filename) 
   index_global = -1
   index_old = -1
@@ -116,12 +115,12 @@ def read_data(filename, cyclones, multiple_basins,pre_selection):
             cyclones[index_global].landfall = int(float(fields[11])) 
 
       # Stop counting and print line number for next iteration  
-      if (index_global - n_unactive) == 100:
+      if (index_global - n_unactive) == Ncyclones:
         break
 
-  Ncyclones = index_global
-  print("N of cyclones in the input file", Ncyclones)
-  print("N of cyclones which fit criteria", Ncyclones - n_unactive)
+  total_cyclones = index_global
+  print("N of cyclones in the input file", index_global)
+  print("N of cyclones which fit criteria", index_global - n_unactive)
   print("Line number for next iteration", line_number)
 
 
@@ -137,30 +136,12 @@ def read_data(filename, cyclones, multiple_basins,pre_selection):
             tot_cyclones[bas] += 1
             tot_tsteps[bas] +=  max(cyclones[i].times)
 
-  return Ncyclones
+  return total_cyclones
 
 
 def set_distances(Ncyclones, cyclones):
   lat_set={}
   lon_set={}
-  radius= 6371 
-  effective_distance = 1500.0
-  #   cyclone[1]:
-  #               lat(1)   lon(1)
-  #		  lat(2)   lon(2)
-  #	 	  ...
-  #	          lat(len(cyclones[1].lat))   lon(len(cyclones[1].lat))  
-  #   cyclone[2]:
-  #		  lat(1)   lon(1)
-  #		  lat(2)   lon(2)
-  #	 	  ...
-  #	          lat(len(cyclones[2].lat))   lon(len(cyclones[2].lat))  
-  #   ...
-  #   cyclone[last]:
-  #               lat(1)  lon(1)
-  #		  lat(2)   lon(2)
-  #	 	  ...
-  #	          lat(len(cyclones[last].lat))   lon(len(cyclones[last].lat))  
   
   for i in range(0, Ncyclones):
     lat_set[i] = numpy.array(cyclones[i].lats) 
@@ -251,7 +232,7 @@ def place_event(Ncyclones, effective_distance, cyclones, current_time,time_offse
             min_distance.append(0)
           if cyclones[j].start_time > current_time:
             min_distance.append(0) 
-      # At the end we always have a N of large cyclones which can only be placed alone 
+ 
       if not active_cyclone:
         cyclones[i].status = 0
         cyclones[i].start_time = current_time + time_offset
@@ -266,8 +247,7 @@ def place_event(Ncyclones, effective_distance, cyclones, current_time,time_offse
         order += 1
         cyclones[i].order = order
      
-        # Add custom made offset (time_offset2)
-        # to remove it move time_offset2 to time_offset and comment for loop
+        # custom made offset(time_offset2), remove by replacing time_offset2 to time_offset
         # 8 is 24 hours
         dist_min = []
         dist_min.append(effective_distance)
@@ -307,8 +287,8 @@ def tstepping(Ncyclones, cyclones, Nfiles):
 
       if cyclones[i].status == 0 and (cyclones[i].start_time +  \
          max(cyclones[i].times)) == current_time:
-        # Wait for offset time before changing to finished
-        cyclones[i].status = 2 # start of spinup
+        # Wait for offset time before changing status to finished
+        cyclones[i].status = 2 
 
       if cyclones[i].status == 2 and (cyclones[i].start_time +  \
          max(cyclones[i].times) + time_offset == current_time):
@@ -327,9 +307,6 @@ def write_new_database(Ncyclones, cyclones, basin_name):
    out_file = dict()
    counter = numpy.zeros(Nfiles,dtype=int)
    time_list=open("data/starting_times.txt","w+")
-   for k in range(0, Nfiles):
-     filename[k] = basin_name + str(k) + ".txt"
-     out_file[k] = open(filename[k], "w+")
 
    for i in range(0, Ncyclones):
      for j in range(0, Ncyclones):
@@ -339,16 +316,16 @@ def write_new_database(Ncyclones, cyclones, basin_name):
            filename2 = "data/cyclone_" + str(cyclones[j].start_time) + ".txt"
            single_out_file = open(filename2, "w+")
 
+           #Write starting times to a file
            for l in range(0, Nfiles):
              if counter[l] <= cyclones[j].start_time:
                counter[l] = cyclones[j].start_time + max(cyclones[j].times)
-               print ('file number', l,'cyclone N',j,'starting time',    \
-                      cyclones[j].start_time, 'starting time for next cyclone',counter[l])      
-               str_time=str(cyclones[j].start_time)+', '+str(cyclones[j].start_time + len(cyclones[j].times))
+               str_time=str(cyclones[j].start_time)+', '+ \
+                        str(cyclones[j].start_time + len(cyclones[j].times))
                time_list.write(str_time + '\n')
                break
 
-         for k in range(0, len(cyclones[j].times)):
+           for k in range(0, len(cyclones[j].times)):
 
              strn = '2008.0, 1.0, ' + str(j) + ', ' + str(cyclones[j].start_time + \
                     cyclones[j].times[k]) + ', ' + str(cyclones[j].basin) + ', ' + \
@@ -358,25 +335,19 @@ def write_new_database(Ncyclones, cyclones, basin_name):
                     ', ' + str(cyclones[j].landfall) + ', ' + str(cyclones[j].ld[k])
 
              single_out_file.write(strn + '\n')
-             out_file[l].write(strn + '\n')
 
-         single_out_file.close()
+           single_out_file.close()
 
    time_list.close()
-   for k in range(0,Nfiles):
-     out_file[k].close()
 
-
-#if __name__=="__main__":
 
 def optimization():
 
-  Ncyclones = read_data(filename, cyclones,multiple_basins, pre_selection)
-  Ncyclones = 20 # for fast check
-  set_distances(Ncyclones, cyclones)
+  total_cyclones = read_data(filename, cyclones, multiple_basins, pre_selection, Ncyclones)
+  set_distances(total_cyclones, cyclones)
   order = 0
 
-  for i in range(0, Ncyclones):
+  for i in range(0, total_cyclones):
     if cyclones[i].status == -1:
         cyclones[i].status = 0
         cyclones[i].start_time = 0
@@ -384,9 +355,8 @@ def optimization():
         order += 1
         break
 
-  tstepping(Ncyclones, cyclones, Nfiles)
-  write_new_database(Ncyclones, cyclones, basin_name)
-  check_distance(Ncyclones, cyclones, basin_name)
+  tstepping(total_cyclones, cyclones, Nfiles)
+  write_new_database(total_cyclones, cyclones, basin_name)
 
 
 
