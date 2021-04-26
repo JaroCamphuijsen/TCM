@@ -370,19 +370,6 @@ def write_new_database(Ncyclones, cyclones, basin_name):
 #if __name__=="__main__":
 
 def optimization():
-  #filename = sys.argv[1]  #  input file
-  #start_line = int(sys.argv[2]) # line to start reading cyclones
-  filename = "STORM_DATA_IBTRACS_NA_1000_YEARS_0.txt"  #  input file
-  start_line = 0 # line to start reading cyclones
-  multiple_basins = False
-  effective_distance = 1500.0
-  time_offset = 16 #  8 is one day
-  Nfiles = 5
-  basin_name = "NA_"
-  pre_selection = False
-  Ncyclones = 0
-  order = 0
-  cyclones=dict()
 
   Ncyclones = read_data(filename, cyclones,multiple_basins, pre_selection)
   Ncyclones = 20 # for fast check

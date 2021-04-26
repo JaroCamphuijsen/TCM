@@ -24,7 +24,7 @@ def my_plot(x,y,var,var_min,var_max,name):
 
 
 optimization()
-sys.exit()
+
 start_date="20080101"
 start_datetime=datetime.strptime(start_date,"%Y%m%d")
 tend=30. | units.day
