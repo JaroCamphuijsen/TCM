@@ -5,6 +5,7 @@ from omuse.community.delft3d.interface import DFlowFM
 from omuse.units import units
 from matplotlib import pyplot
 
+import os
 import sys
 import numpy
 
@@ -88,6 +89,12 @@ while d.model_time < tend-dt/2:
     my_plot(x_n,y_n,z_int,-0.3,0.3,name)
     
     print(d.model_time)
+
  
+#Remove old files in data folder
+files = os.listdir("./data/")
+for f in files:
+    os.remove("./data/" + f)
+
 d.stop()
   
