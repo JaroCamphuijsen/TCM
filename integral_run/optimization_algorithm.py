@@ -99,7 +99,7 @@ def read_data(filename, cyclones, multiple_basins,pre_selection,Ncyclones):
       else:
         shore_distance = 1e6
 
-      if(float(fields[12]) < shore_distance or len(cyclones[index_global].times) != 0):
+      if float(fields[12]) < shore_distance:
         cyclones[index_global].set_times(int(float(fields[3])))
         cyclones[index_global].set_lats(float(fields[5]))
         cyclones[index_global].set_lons(float(fields[6]))
@@ -113,6 +113,9 @@ def read_data(filename, cyclones, multiple_basins,pre_selection,Ncyclones):
         if pre_selection == True:
           if int(float(fields[11])) > cyclones[index_global].landfall:
             cyclones[index_global].landfall = int(float(fields[11])) 
+      if len(cyclones[index_global].times)==0:
+        cyclones[index_global].status = 3
+        n_unactive += 1
 
       # Stop counting and print line number for next iteration  
       if (index_global - n_unactive) == Ncyclones:
