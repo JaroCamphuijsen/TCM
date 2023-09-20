@@ -1,5 +1,5 @@
 *.mdu
-unstruc.dia
+*.dia
 
 # Exclude all simulatin output
 output*
