@@ -1,0 +1,8 @@
+*.mdu
+unstruc.dia
+
+# Exclude all simulatin output
+output*
+*.e
+*.o
+*.png
