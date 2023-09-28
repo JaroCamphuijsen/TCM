@@ -6,3 +6,7 @@ output*
 *.e
 *.o
 *.png
+
+#Exclude large input files
+*.spw
+*.nc
