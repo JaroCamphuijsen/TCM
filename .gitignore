@@ -1,0 +1,12 @@
+*.mdu
+*.dia
+
+# Exclude all simulatin output
+output*
+*.e
+*.o
+*.png
+
+#Exclude large input files
+*.spw
+*.nc
