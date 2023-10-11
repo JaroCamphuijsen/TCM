@@ -37,3 +37,9 @@ Optimization algorithm can be run with a command `python script.py Name_of_input
   Movies are created using Online GIF maker and image editor:\
   https://ezgif.com/apng-maker
 
+## omuse scenarios
+
+### GTSM-ERA5
+This scenario couples the Delft3D gtsm model to era5 forcing using the era5 interface in omuse.
+
+### GTSM-ERA5ext
