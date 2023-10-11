@@ -1,7 +1,8 @@
-# TCM
-Different aspects of tropical cyclones modelling
+# Tropical Cyclone Modeling (TCM)
 
-## Spatio-temporal optimization algorithm and DelftFM benchmark
+Various scenarios of tropical cyclones modelling
+
+## Installation instructions
 
 ### Dependencies
 
@@ -11,35 +12,43 @@ Different aspects of tropical cyclones modelling
 | omuse          | https://github.com/omuse-geoscience/omuse.                                                 |
 
 ### Installation
+
 * Install amuse framework with `pip install amuse-framework`
 * Install omuse:\
   go to omuse directory and run `pip install -e .`
-  
-### Running script
 
-#### Spatio-temporal optimization
-Optimization algorithm can be run with a command `python script.py Name_of_input_database Starting_line_number_in_input`
+## Usage
 
-#### DelftFM benchmark
-* Run with wind velocities and pressure determined on Spiderweb grid.\
-  input files:\
-  gtsm_coarse_irma.ext\
-  gtsm_coarse_irma.mdu\
-  SPW_irma.spw
-  
-* Run with internal omuse calculations of wind velocities and pressure.\
-  input files:\
-  gtsm_coarse.ext\
-  gtsm_coarse.mdu\
-  irma_data.txt
-  
-* Creating movies from output files.\
-  Movies are created using Online GIF maker and image editor:\
-  https://ezgif.com/apng-maker
+In general the scenarios can be run by calling the relevant python script from a scenario directory:
 
-## omuse scenarios
+```bash
+python path/to/script.py
+```
 
-### GTSM-ERA5
+To use MPI to run OMUSE in parallel and take advantage of OMUSE capabilities:
+
+```bash
+mpirun --report-bindings -v -np 1 python path/to/script.py
+```
+
+On snellius one should submit a batch job, an example can be found in job.sh
+
+## OMUSE scenarios descriptions
+
+The following scenarios which use OMUSE to model specific combinations of model/data coupling and benchmarking/optimization efforts can be found in this repository in the corresponding directories.
+
+### gtsm-era5
+
 This scenario couples the Delft3D gtsm model to era5 forcing using the era5 interface in omuse.
 
-### GTSM-ERA5ext
+### gtsm-era5ext
+
+Running GTSM with ERA5 forcing, but with the forcing files specified in the .ext file of Delft3DFM.
+
+### delftfm_benchmark
+
+Benchmarking the Delft3DFM implementation. For more information about this scenario see delftfm_benchmark/README.md
+
+### TC_optimization
+
+Spatio-temporal optimization algorithm can be run with a command `python script.py $Name_of_input_database $Starting_line_number_in_input`
