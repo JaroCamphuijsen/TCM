@@ -33,17 +33,25 @@ mpirun --report-bindings -v -np 1 python path/to/script.py
 
 On snellius one should submit a batch job, an example can be found in job.sh
 
-## OMUSE scenarios descriptions
+## OMUSE model configurations
 
-The following scenarios which use OMUSE to model specific combinations of model/data coupling and benchmarking/optimization efforts can be found in this repository in the corresponding directories.
+The following model configurations, which use OMUSE to model specific combinations of model/data coupling and benchmarking/optimization efforts can be found in this repository in the corresponding directories.
 
 ### gtsm-era5
 
-This scenario couples the Delft3D gtsm model to era5 forcing using the era5 interface in omuse.
+Model configuration that uses OMUSE to couple ERA5 forcing data (wind and pressure) downloaded through OMUSE with the GTSM model (Delft3D).
 
 ### gtsm-era5ext
 
-Running GTSM with ERA5 forcing, but with the forcing files specified in the .ext file of Delft3DFM.
+GTSM configuration files to execute GTSM with ERA5 forcing. ERA5 forcing files are downloaded and preprocessed beforehand and are specified in the external forcings file (.ext) of GTSM. - OMUSE is not used. GTSM is ran directly from Delft3d.
+
+### gtsm-holland
+
+Model configuration uses OMUSE to run the Holland model and couple it with the GTSM model (Delft3D).
+
+### gtsm-holland_era5ext
+
+GTSM configuration files to execute GTSM with Holland model output (spiderweb file) and ERA5 forcing in the background. Holland model output and ERA5 forcing files are prepared beforehand and are specified in the external forcings file (.ext) of GTSM. - OMUSE is not used. GTSM is ran directly from Delft3d. The spiderweb file includes a spw_merge_frac parameter to specify the fraction of the spiderweb radius where the merging with ERA5 starts.
 
 ### delftfm_benchmark
 
