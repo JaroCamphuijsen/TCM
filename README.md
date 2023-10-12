@@ -43,7 +43,7 @@ Model configuration that uses OMUSE to couple ERA5 forcing data (wind and pressu
 
 ### gtsm-era5ext
 
-GTSM configuration files to execute GTSM with ERA5 forcing. ERA5 forcing files are downloaded and preprocessed beforehand and are specified in the external forcings file (.ext) of GTSM. - OMUSE is not used. GTSM is ran directly from Delft3d.
+Model configuration that uses OMUSE to couple ERA5 forcing data (or any other netcdf data) with GTSM. Forcing files are downloaded and preprocessed beforehand by the user and are specified in the external forcings file (.ext) of GTSM.
 
 ### gtsm-holland
 
