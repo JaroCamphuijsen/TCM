@@ -26,7 +26,7 @@ def init_global(start_date):
     return d
 
 def init_nested(start_date):
-    d=DFlowFM(ini_file="RF.mdu", coordinates="spherical", redirection="none", workdir="nested")
+    d=DFlowFM(ini_file="RF.mdu", coordinates="spherical", redirection="none", workdir="local")
  
     # set parameters
     #~ d.parameters.use_interface_wind=False
