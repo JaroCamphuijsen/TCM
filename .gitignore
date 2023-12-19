@@ -6,7 +6,16 @@ output*
 *.e
 *.o
 *.png
+*.out
+*.tek
 
 #Exclude large input files
 *.spw
 *.nc
+*.m
+*.xyz
+*.cmp
+*.pol
+
+#exclude cache
+*.cache
