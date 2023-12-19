@@ -1,0 +1,11 @@
+# written by HYDROLIB-core 0.3.1
+
+[General]
+fileVersion = 2.01
+fileType    = extForce
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = haiyan.pli
+forcingFile  = haiyan_waterlevel_global_0s.bc
+
