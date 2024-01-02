@@ -13,48 +13,49 @@ start_datetime=datetime.strptime(start_date,"%Y%m%d")
 tend=4.5 | units.day
 dt=(1.| units.hour)
 
-def init_global(start_date):
+workdir = "/projects/0/einf2224/TCM/nested-gtsm-coarse_partitioned"
+
+g_name = "global"
+g_npart = 2
+g_ini_file = "gtsm_coarse.mdu"
+g_ncfile = "step11_global_net.nc"
+g_extforcefile = "gtsm_coarse.ext"
+g_partitionfile = "step11_global_part.pol"
+
+
+l_name = "local"
+l_npart = 2
+l_ini_file = "RF.mdu"
+l_ncfile = "test_net.nc"
+l_extforcefile = "RF.ext"
+l_partitionfile = "test_part.pol"
+
+def init_gtsm(start_date, model_name, npart, workdir, ini_file, ncfilename, extForceFile, partitionFile, doPartition=False):
     # partition
-    #p=Partitioner(redirection="none")
-    #p.parameters.generate_polygon_file=1
-    #p.parameters.number_of_subdomains=2
-    #print(p.parameters)
-    #p.parameters.filename="/projects/0/einf2224/TCM/nested-gtsm_partitioned_coarse/global/step11_global_net.nc"
-    #p.do_partition()
+    if npart > 1 and doPartition:
+        p = Partitioner(redirection="none")
+        p.parameters.generate_polygon_file = 1
+        p.parameters.number_of_subdomains = npart
+        print("Partitioning global model with: ", p.parameters)
+        ncfile = workdir + "/" + model_name + "/" + ncfilename
+        p.parameters.filename = ncfile
+        p.do_partition()
 
     # initiate GTSM model
-    d=DFlowFM(number_of_workers=2, ini_file="gtsm_coarse.mdu", coordinates="spherical", redirection="none", workdir="/projects/0/einf2224/TCM/nested-gtsm_partitioned_coarse/global")
+    sub_workdir = workdir + "/" + model_name
+    d=DFlowFM(number_of_workers = npart, ini_file=ini_file, coordinates="spherical", redirection="none", workdir=sub_workdir)
     
-    # set parameters
-    d.parameters.use_interface_wind=False
-    d.parameters.use_interface_patm=False
-    d.ini_time.RefDate=start_date
-    
-    d.ini_external_forcing.ExtForceFile="gtsm_coarse.ext"
-    d.ini_geometry.PartitionFile="step11_global_part.pol"
-    d.ini_numerics.Icgsolver=6
-
-    return d
-
-def init_nested(start_date):
-    # partition
-    p=Partitioner(redirection="none")
-    p.parameters.generate_polygon_file=1
-    p.parameters.number_of_subdomains=2
-    p.parameters.filename="/projects/0/einf2224/TCM/nested-gtsm_partitioned_coarse/local/test_net.nc"
-    p.do_partition()
-    
-    # initiate GTSM model
-    d=DFlowFM(number_of_workers=2, ini_file="RF.mdu", coordinates="spherical", redirection="none", workdir="/projects/0/einf2224/TCM/nested-gtsm_partitioned_coarse/local")
- 
-    # set parameters
-    #~ d.parameters.use_interface_wind=False
-    #~ d.parameters.use_interface_patm=False
-    d.parameters.use_interface_waterlevel_boundary=True
+    # alocal model should use the interface to get the boundary values at the boundary from the global model
+    if model_name=="global":
+        d.parameters.use_interface_wind=False
+        d.parameters.use_interface_patm=False
+    if model_name=="local":
+        d.parameters.use_interface_waterlevel_boundary=True
 
     d.ini_time.RefDate=start_date
-    d.ini_external_forcing.ExtForceFile="RF.ext"
-    d.ini_geometry.PartitionFile="test_part.pol"
+    
+    d.ini_external_forcing.ExtForceFile=extForceFile
+    d.ini_geometry.PartitionFile=partitionFile
     d.ini_numerics.Icgsolver=6
 
     return d
@@ -158,7 +159,6 @@ def allplots(nodes1, nodes2, nodes1b, n, title=""):
     pyplot.close(f)
 
 
-
 def find_matching_subgrid(grid, sub, names=["lon","lat"]):
     indices=[]
     for s in sub:
@@ -166,6 +166,7 @@ def find_matching_subgrid(grid, sub, names=["lon","lat"]):
       indices.append(numpy.argmin(d.number))
     indices=numpy.array(indices)
     return grid[indices]
+
 
 def evolve_gtsm_nested(gtsm, nested, tend, dt):
 
@@ -232,14 +233,14 @@ def evolve_gtsm_nested(gtsm, nested, tend, dt):
         
 if __name__=="__main__":
 
-    gtsm=init_global(start_date)
-    nested=init_nested(start_date)
+    global_model=init_gtsm(start_date, g_name, g_npart, workdir, g_ini_file, g_ncfile, g_extforcefile, g_partitionfile)
+    local_model=init_gtsm(start_date, l_name, l_npart, workdir, l_ini_file, l_ncfile, l_extforcefile, l_partitionfile, doPartition=True)
     
         
-    evolve_gtsm_nested(gtsm, nested, tend,dt)
+    evolve_gtsm_nested(global_model, local_model, tend,dt)
     #evolve_single(gtsm, tend, dt)
     
-    nested.stop()
-    gtsm.stop()
+    local_model.stop()
+    global_model.stop()
   
 
