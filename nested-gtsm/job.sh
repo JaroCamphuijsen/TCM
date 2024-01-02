@@ -20,6 +20,6 @@ bbox_gtsm=-82.5,-79.5,29.5,32.5
 
 # maybe by default now I would do that I have a certain period for which I run tides, and also for which I save data. To make it simple.
 
-mpirun --report-bindings -v -np 1 python /gpfs/home2/jcamphuijsen/omuse_scenarios/gtsm-era5ext/gtsm_holland_era5.py "$start_date" "$bbox_gtsm"
+mpirun --report-bindings -v -np 1 python /gpfs/work2/0/einf2224/TCM/nested-gtsm/coupled-global-local.py "$start_date" "$bbox_gtsm"
  
 
